@@ -70,6 +70,7 @@ export const verifyLink = catchAsync(async (req, res, next) => {
   const { token } = req.query;
   console.log("recieved token --> ", token);
   const user = await User.findOne({ token });
+
   return res.status(200).json({
     success: true,
   });
