@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import viewRouter from "./routers/viewRouter.js";
 import authRouter from "./routers/authRouter.js";
+import { errorController, errorLogger } from "./controllers/errorController.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,5 +22,15 @@ app.use(cookieParser());
 
 app.use("", viewRouter);
 app.use("/api/v1/auth", authRouter);
+
+app.use("*", (req, res, next) => {
+  return res.status(400).json({
+    success: false,
+    message: `can't find ${req.originalUrl} on this server`,
+  });
+});
+
+app.use(errorController);
+app.use(errorLogger);
 
 export default app;
