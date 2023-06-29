@@ -1,4 +1,4 @@
-const notificationMarkUp = `<div aria-live="assertive"
+const notificationMarkUp = (header, text, error) => `<div aria-live="assertive"
 class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 notification-bar"
 >
 <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
@@ -7,17 +7,14 @@ class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start
       <div class="p-4">
         <div class="flex items-start">
           <div class="flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#16a34a" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              
+      
           </div>
           <div class="ml-3 w-0 flex-1 pt-0.5">
             <p class="text-sm font-medium text-gray-900">
-              Sign In link generated successfully
+              ${header}
             </p>
             <p class="mt-1 text-sm text-gray-500">
-              Check your email for your sign in link
+              ${text}
             </p>
           </div>
           <div class="ml-4 flex flex-shrink-0">
@@ -44,11 +41,11 @@ const hideNotification = () => {
   if (element) element.parentElement.removeChild(element);
 };
 
-const showNotification = () => {
+const showNotification = (header, text, error) => {
   hideNotification();
   document
     .querySelector("body")
-    .insertAdjacentHTML("afterbegin", notificationMarkUp);
+    .insertAdjacentHTML("afterbegin", notificationMarkUp(header, text, error));
   window.setTimeout(hideNotification, 5000);
 };
 
@@ -66,10 +63,22 @@ const attemptLogin = async (email) => {
       const data = await res.json();
       console.log(data);
       if (data.success) {
-        showNotification();
+        showNotification(
+          "Sign In link generated successfully",
+          "Check your email for your sign in link",
+          false
+        );
       }
+    } else {
+      const data = await res.json();
+      const error = data.error;
+      const message = error
+        ? error.message
+        : "Something went wrong, please try again";
+      showNotification("Error", message, true);
     }
   } catch (err) {
+    showNotification("Something went wrong", "Please try again", true);
     console.log("err");
     console.log(err);
   }
@@ -85,4 +94,32 @@ if (form) {
     attemptLogin(email);
     form.reset();
   });
+}
+
+const logout = async () => {
+  console.log("attempting logout");
+  try {
+    const res = await fetch("/api/v1/auth/logout", {
+      method: "GET",
+    });
+    const data = await res.json();
+    console.log(data);
+    if (data.success) {
+      location.reload(true);
+    } else {
+      const data = await res.json();
+      const error = data.error;
+      const message = error
+        ? error.message
+        : "Something went wrong, please try again";
+      showNotification("Error", message, true);
+    }
+  } catch (error) {
+    console.log(error.response);
+  }
+};
+
+const logoutbtn = document.querySelector(".logout");
+if (logoutbtn) {
+  logoutbtn.addEventListener("click", logout);
 }
