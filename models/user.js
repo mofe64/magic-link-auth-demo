@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import validator from "validator";
 
+// user schema to store user details in the database
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -14,5 +15,6 @@ const userSchema = new mongoose.Schema({
   tokenExpiry: Date,
 });
 
+// create a user model from the above schema
 const User = mongoose.model("User", userSchema);
 export default User;

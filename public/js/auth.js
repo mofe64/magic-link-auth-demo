@@ -1,3 +1,4 @@
+// util fucntion that inserts a custom header and text into the markup for our notificaton
 const notificationMarkUp = (header, text, error) => `<div aria-live="assertive"
 class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 notification-bar"
 >
@@ -36,21 +37,30 @@ class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start
 </div>
 </div> `;
 
+// util function to hide the notifcation bar
 const hideNotification = () => {
+  // find the notifcation bar element in dom
   const element = document.querySelector(".notification-bar");
+  // if found, then remove the element from its parent
   if (element) element.parentElement.removeChild(element);
 };
 
+// util function to show the notifcation bar
 const showNotification = (header, text, error) => {
+  // if notification bar is currently visible hide it
   hideNotification();
+  // insert our notification markup intp the body tag of the page
   document
     .querySelector("body")
     .insertAdjacentHTML("afterbegin", notificationMarkUp(header, text, error));
+  // after 5 seconds hide the notification
   window.setTimeout(hideNotification, 5000);
 };
 
+// method to attempt to start the login process for user
 const attemptLogin = async (email) => {
   try {
+    // send get request to login endpoint with email passed in body
     const res = await fetch("/api/v1/auth/login", {
       method: "POST",
       headers: {
@@ -59,10 +69,14 @@ const attemptLogin = async (email) => {
       },
       body: JSON.stringify({ email }),
     });
+    // if response is ok (200)
     if (res.ok) {
+      // decode reponse
       const data = await res.json();
       console.log(data);
+      // if response success flag is true
       if (data.success) {
+        // show success notification
         showNotification(
           "Sign In link generated successfully",
           "Check your email for your sign in link",
@@ -70,22 +84,31 @@ const attemptLogin = async (email) => {
         );
       }
     } else {
+      // if response success flag is not true
+      // decode reponse
       const data = await res.json();
+      // extract error from response
       const error = data.error;
+      // extract error message from error if present else
+      // we use a generic error message
       const message = error
         ? error.message
         : "Something went wrong, please try again";
+      // show error notification
       showNotification("Error", message, true);
     }
   } catch (err) {
+    // if an error was thrown, then show error notification and log error
     showNotification("Something went wrong", "Please try again", true);
     console.log("err");
     console.log(err);
   }
 };
 
+// select login form and add event listener on the submit event
 const form = document.querySelector(".login-form");
 if (form) {
+  // on submit, we call the attempt login method and reset the form
   form.addEventListener("submit", (e) => {
     console.log("e is --->", e);
     e.preventDefault();
@@ -96,17 +119,23 @@ if (form) {
   });
 }
 
+// method to logout the user
 const logout = async () => {
   console.log("attempting logout");
+  // send get request to the logout endpoint
   try {
     const res = await fetch("/api/v1/auth/logout", {
       method: "GET",
     });
+    // decode response
     const data = await res.json();
     console.log(data);
+    // if successful, then reload the page, which will redirect to
+    // login since user is logged out
     if (data.success) {
       location.reload(true);
     } else {
+      // else extract error message and display error notification
       const data = await res.json();
       const error = data.error;
       const message = error
@@ -115,11 +144,14 @@ const logout = async () => {
       showNotification("Error", message, true);
     }
   } catch (error) {
+    // if an error was thrown, then show error notification and log error
     console.log(error.response);
   }
 };
 
+// add event listener to the logout btn for the click event
 const logoutbtn = document.querySelector(".logout");
 if (logoutbtn) {
+  // on click we call the logout method
   logoutbtn.addEventListener("click", logout);
 }

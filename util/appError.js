@@ -1,3 +1,5 @@
+// custom error object to use within our application
+// extends the javascript error object
 class ApplicationError extends Error {
   statusCode;
   constructor(statusCode, message) {
